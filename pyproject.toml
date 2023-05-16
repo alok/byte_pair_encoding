@@ -1,0 +1,15 @@
+[tool.poetry]
+name = "byte-pair-encoding"
+version = "0.1.0"
+description = ""
+authors = ["Alok Singh <alokbeniwal@gmail.com>"]
+readme = "README.md"
+packages = [{include = "byte_pair_encoding"}]
+
+[tool.poetry.dependencies]
+python = "^3.11"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
