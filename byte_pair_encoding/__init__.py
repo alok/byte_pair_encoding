@@ -136,5 +136,5 @@ with urllib.request.urlopen(
 ) as response:
     html: str = response.read().decode("utf-8")[:12_500]
     test_bpe(html)
-# TODO: extend to byte-level BPE to handle bigger vocabs
+# TODO: extend to byte-level BPE to handle bigger vocabs https://huggingface.co/learn/nlp-course/chapter6/5
 # %%
