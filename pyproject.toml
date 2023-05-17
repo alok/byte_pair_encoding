@@ -8,7 +8,18 @@ packages = [{include = "byte_pair_encoding"}]
 
 [tool.poetry.dependencies]
 python = "^3.11"
+tyro = "^0.5.2"
+torch = "^2.0.1"
+torchtext = "^0.15.2"
+einops = "^0.6.1"
+numpy = "^1.24.3"
+bidict = "^0.22.1"
+more-itertools = "^9.1.0"
+zhon = "^1.1.5"
 
+
+[tool.poetry.group.dev.dependencies]
+ipykernel = "^6.23.1"
 
 [build-system]
 requires = ["poetry-core"]
