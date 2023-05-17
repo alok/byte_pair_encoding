@@ -9,6 +9,10 @@ from dataclasses import dataclass, replace
 from typing import Sequence, Mapping
 import urllib.request
 import urllib.response
+import zhon.hanzi
+import zhon.pinyin
+import zhon.zhuyin
+import zhon.cedict
 
 # %%
 ALPHABET = string.ascii_letters
@@ -16,7 +20,7 @@ SAMPLE_TEXT = "aaabdaaabac"
 
 CODON = 2  # Bio term for readframe length
 DEPTH = 3
-MIN_FREQ = 2
+MIN_FREQ = 100
 
 not_in_sample = set(ALPHABET) - set(SAMPLE_TEXT)  # alphabet minus sampletext members
 
@@ -66,19 +70,29 @@ sample = SAMPLE_TEXT
 
 
 def bpe(s: str) -> tuple[str, list[bidict.bidict]]:
-    # TODO replace string.punctuation with more general thing
-    # replacements=dict(zip(pairs,collections.deque(string.punctuation)))
+    """As decadent Western pig, this uses Chinese characters as the complement of text."""
     replacements: list[bidict.bidict] = []
-    replacement_char_set = set(zhon.cedict.traditional)
+
+    replacement_char_set = set(
+        itertools.chain(
+            zhon.cedict.traditional, zhon.hanzi.characters, zhon.zhuyin.characters
+        )
+    )
+
     while True:
+        # TODO really want more_itertools.chunk (ignore last char)
         pairs = collections.Counter(itertools.pairwise(s))
+        pairs = ["".join(p) for p, ct in pairs.items() if ct > MIN_FREQ]
+        # TODO 'most common' optimization
+        # pairs = pairs.most_common(1)
         replacement_chars = []
+
         for _ in range(len(pairs)):
             replacement_chars.append(replacement_char_set.pop())
 
         replacement = bidict.bidict(
             zip(
-                (p for p, ct in pairs.items() if ct > 1),
+                pairs,
                 replacement_chars,
             )
         )
@@ -87,7 +101,7 @@ def bpe(s: str) -> tuple[str, list[bidict.bidict]]:
         new = s
         for pair, new_char in replacement.items():
             new = new.replace("".join(pair), new_char)
-        print(f"{s} -> {new}")
+
         if len(new) < len(s):
             s = new
         else:
@@ -101,53 +115,26 @@ def rev_bpe(s: str, replacements: list[bidict.bidict]) -> str:
     for replacement in reversed(replacements):
         for new_char, pair in replacement.inv.items():
             new = new.replace(new_char, "".join(pair))
-            print(f"{new}")
+
     return new
 
 
-assert (rev_bpe(*bpe(SAMPLE_TEXT))) == SAMPLE_TEXT
-
-# TODO replace string.punctuation with more general thing
-# replacements=dict(zip(pairs,collections.deque(string.punctuation)))
-replacements: list[bidict.bidict] = []
-REPLACEMENT_CHAR_SET = set(zhon.cedict.traditional)
-while True:
-    pairs = collections.Counter(itertools.pairwise(sample))
-    REPLACEMENT_CHARS = []
-    for _ in range(len(pairs)):
-        REPLACEMENT_CHARS.append(REPLACEMENT_CHAR_SET.pop())
-
-    replacement = bidict.bidict(
-        zip((p for p, ct in pairs.items() if ct > 1), REPLACEMENT_CHARS)
-    )
-    # print(replacement)
-    replacements.append(replacement)
-    new_sample = sample
-    for pair, new_char in replacement.items():
-        # print(f"{pair=}")
-        new_sample = new_sample.replace("".join(pair), new_char)
-    print(f"{sample} -> {new_sample}")
-    if len(new_sample) < len(sample):
-        sample = new_sample
-    else:
-        break
+# TODO add hypothesis test
+def test_bpe(s: str):
+    encoded, replacements = bpe(s)
+    out = rev_bpe(encoded, replacements)
+    assert out == s
 
 
-# rev
-for replacement in reversed(replacements):
-    r = replacement.inv
-    for new_char, pair in r.items():
-        new_sample = new_sample.replace(new_char, "".join(pair))
-        print(f"{new_sample}")
-
-newest_sample = new_sample
-print(f"{newest_sample, SAMPLE_TEXT = }")
-assert newest_sample == SAMPLE_TEXT
+test_bpe(SAMPLE_TEXT)
 # %%
 
+
+# %%
 with urllib.request.urlopen(
     "https://en.wikipedia.org/wiki/Byte_pair_encoding"
 ) as response:
-    html = response.read().decode("utf-8")
-    print(html)
+    html: str = response.read().decode("utf-8")[:12_500]
+    test_bpe(html)
+# TODO: extend to byte-level BPE to handle bigger vocabs
 # %%
