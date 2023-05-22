@@ -1,11 +1,11 @@
 # %%
 import string
 import collections
-import zhon.cedict
+
 import itertools
 import bidict
 import tyro
-from dataclasses import dataclass, replace
+from dataclasses import dataclass
 from typing import Sequence, Mapping
 import urllib.request
 import urllib.response
@@ -26,44 +26,6 @@ not_in_sample = set(ALPHABET) - set(SAMPLE_TEXT)  # alphabet minus sampletext me
 
 text = SAMPLE_TEXT
 luc_dict = {}
-
-# # Megan's attempt
-
-# for _ in range(DEPTH):
-#     splt = [text[i : i + CODON] for i in range(0, len(text), CODON)]
-#     # get frequency table? (intuition that this probably isn't especially efficient)
-#     frequency = collections.Counter(
-#         splt
-#     ).most_common()  # ...seems to auto spit out most common first? TODO:doublecheck this
-#     while True:
-#         p, n = frequency.popitem()
-#         print(f{'p='})
-#         if n < MIN_FREQ:
-#             break
-
-#         s = not_in_sample.pop()
-#         print(f'f{p,s=}')
-#         luc_dict.update({s: p})
-#         text = text.replace(p, s)
-
-# print(text)
-# print(luc_dict)
-
-# # %%
-# # ## pseudocode
-# # text2 = SAMPLE_TEXT
-# # lut_dict = dict()
-# #
-# # for all common_pairs in SAMPLE_TEXT:
-# #     add to lut_dict
-# #     replace in text_2
-# #
-# # for all common_pairs in text_2:
-# #     add to lut_dict
-# #     replace in text_2
-# #
-# # ## todo: set up so you can use a variable to set depth of recursion
-# # ## (note that in this implementation, you also need to know depth to de-convert; {X:ab, Y:bc, Z:XY})
 
 # %%
 sample = SAMPLE_TEXT
